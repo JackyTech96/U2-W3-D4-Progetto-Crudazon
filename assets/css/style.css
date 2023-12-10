@@ -1,0 +1,18 @@
+*,
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: #edf2fb;
+}
+
+a {
+  text-transform: none;
+}
+
+.card {
+  background-color: #f8f9fa;
+}
