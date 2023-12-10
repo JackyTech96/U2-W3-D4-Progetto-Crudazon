@@ -1,23 +1,46 @@
-const URL = "https://striveschool-api.herokuapp.com/api/product/";
+const params = new URLSearchParams(window.location.search);
+const id = params.get("resourceId");
+const token =
+  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NTcxZDQ2MDBkOGEyMDAwMThhNDhhNTkiLCJpYXQiOjE3MDE5NTg3NTIsImV4cCI6MTcwMzE2ODM1Mn0.jh21shnf-TIu6TRVrMA7xydBBPrShHcjVm214-Pc8jg";
 
-// document.addEventListener("DOMContentLoaded", () => {
-//   const selectedProduct = JSON.parse(localStorage.getItem("selectedProduct"));
-//   if (selectedProduct) {
-//     document.getElementById("name").value = selectedProduct.name;
-//     document.getElementById("brand").value = selectedProduct.brand;
-//     document.getElementById("basic-url").value = selectedProduct.imageUrl;
-//     document.getElementById("description").value = selectedProduct.description;
-//     document.getElementById("price").value = selectedProduct.price;
-//   }
+const endpoint = id
+  ? "https://striveschool-api.herokuapp.com/api/product/" + id
+  : "https://striveschool-api.herokuapp.com/api/product/";
 
-//   document.getElementById("insertButton").addEventListener("click", handleInsert);
-//   document.getElementById("editButton").addEventListener("click", handleEdit);
-// });
+const method = id ? "PUT" : "POST";
+
+document.addEventListener("DOMContentLoaded", () => {
+  const backofficeTitle = document.getElementById("backoffice-title");
+  const submitBtn = document.getElementById("submit-btn");
+  const deleteBtn = document.getElementById("delete-btn");
+
+  if (id) {
+    backofficeTitle.innerText = "Modifica un prodotto";
+    submitBtn.classList.remove("btn-primary");
+    submitBtn.className = "btn btn-success text-white";
+    submitBtn.innerText = "Modifica prodotto";
+    deleteBtn.classList.remove("d-none");
+    fetch(endpoint, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token,
+      },
+    })
+      .then((response) => response.json())
+      .then((productObj) => {
+        document.getElementById("name").value = productObj.name;
+        document.getElementById("brand").value = productObj.brand;
+        document.getElementById("basic-url").value = productObj.imageUrl;
+        document.getElementById("description").value = productObj.description;
+        document.getElementById("price").value = productObj.price;
+      });
+  } else {
+    backofficeTitle.innerText = "Inserisci un nuovo prodotto";
+  }
+});
 
 const handleSubmit = (event) => {
   event.preventDefault();
-
-  const form = event.target;
 
   const newProduct = {
     name: document.getElementById("name").value,
@@ -28,12 +51,11 @@ const handleSubmit = (event) => {
   };
   console.log(newProduct);
 
-  fetch(URL, {
-    method: "POST",
+  fetch(endpoint, {
+    method: method,
     headers: {
       "Content-Type": "application/json",
-      Authorization:
-        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NTcxZDQ2MDBkOGEyMDAwMThhNDhhNTkiLCJpYXQiOjE3MDE5NTg3NTIsImV4cCI6MTcwMzE2ODM1Mn0.jh21shnf-TIu6TRVrMA7xydBBPrShHcjVm214-Pc8jg",
+      Authorization: token,
     },
     body: JSON.stringify(newProduct),
   })
@@ -44,9 +66,33 @@ const handleSubmit = (event) => {
       return response.json();
     })
     .then((createdObj) => {
-      alert("Risorsa con id: " + createdObj._id + " creata con successo!");
+      if (id) {
+        alert("Risorsa con id: " + createdObj._id + " modificata con successo!");
+      } else {
+        alert("Risorsa con id: " + createdObj._id + " creata con successo!");
+      }
+      if (!id) {
+        form.reset();
+      }
     })
     .catch((error) => {
       console.error("Si è verificato un errore:", error);
     });
+};
+
+const handleDelete = () => {
+  const hasConfirmed = confirm("Sei sicuro di voler eliminare il prodotto?");
+  if (hasConfirmed) {
+    fetch(endpoint, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token,
+      },
+    }).then((response) => {
+      if (response.ok) {
+        window.location.assign("./index.html");
+      }
+    });
+  }
 };
